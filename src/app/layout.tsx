@@ -5,13 +5,18 @@ import SmoothScroll from "@/components/layout/SmoothScroll";
 export const metadata = {
   title: "Tezco | Technical Experts",
   description: "Engineering ideas into reality. SaaS, Web, and App development specialists.",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1",
-  // --- ADD THIS SECTION ---
   icons: {
-    icon: "/tezco-logo.png", // Points to public/tezco-logo.png
+    icon: "/tezco-logo.png",
     shortcut: "/tezco-logo.png",
     apple: "/tezco-logo.png",
   },
+};
+
+// Moved viewport here to satisfy Next.js 14+ requirements
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({

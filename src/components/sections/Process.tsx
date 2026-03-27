@@ -4,8 +4,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 import { ScrollToPlugin } from "gsap/dist/ScrollToPlugin";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-// Register GSAP Plugins
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 }
@@ -15,9 +15,16 @@ export default function ModernEffectsPage() {
   const horizontalRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeIndex, setActiveIndex] = useState(1);
+
+  const sliderData = [
+    { title: "Minimal UI", sub: "Precision", desc: "Clean interfaces designed to reduce cognitive load.", img: "https://images.unsplash.com/photo-1558655146-d09347e92766?q=80&w=2000&auto=format&fit=crop" },
+    { title: "Smart UX", sub: "Intuitive", desc: "Architecting seamless user journeys that feel natural.", img: "https://codestrup.com/wp-content/uploads/2023/09/ui-ux-design-services-banner-1024x683.webp" },
+    { title: "Motion Design", sub: "Dynamics", desc: "Purposeful animations that guide users.", img: "https://tse4.mm.bing.net/th/id/OIP._WQYw9u_NI6bKqjzGivfdAHaEK?rs=1&pid=ImgDetMain&o=7&rm=3" },
+    { title: "Grid Systems", sub: "Structure", desc: "Mathematical layouts ensuring perfect scalability.", img: "https://media.geeksforgeeks.org/wp-content/uploads/20230209170229/Grid-System-In-UI-Design.gif" }
+  ];
 
   useEffect(() => {
-    // --- 1. Loading Logic ---
     const timer = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
@@ -27,50 +34,48 @@ export default function ModernEffectsPage() {
         }
         return prev + 5;
       });
-    }, 100);
+    }, 80);
 
     if (isLoading) return;
 
-    // --- 2. GSAP Horizontal Scroll ---
-    const horizontalItems = horizontalRef.current;
-    if (horizontalItems) {
-      // Calculate exact scroll distance
-      const scrollWidth = horizontalItems.scrollWidth - window.innerWidth;
-      
-      gsap.to(horizontalItems, {
-        x: -scrollWidth,
-        ease: "none",
-        scrollTrigger: {
-          trigger: ".horizontal-container", // Triggered by the container
-          start: "top top",
-          end: () => `+=${scrollWidth}`, // Ends exactly when the items finish moving
-          scrub: 0.5,
-          pin: true, // Pins the container while items move
-          invalidateOnRefresh: true,
-          antialiasing: true,
-        },
-      });
-    }
-
-    // --- 3. Zoom Scroll Effect ---
-    gsap.timeline({
-      scrollTrigger: {
-        trigger: ".zoom-container",
-        start: "top top",
-        end: "+=150%", // Slightly reduced to prevent over-scrolling
-        pin: true,
-        scrub: true,
+    const ctx = gsap.context(() => {
+      // Horizontal Scroll Logic
+      const horizontalItems = horizontalRef.current;
+      if (horizontalItems) {
+        const scrollWidth = horizontalItems.scrollWidth - window.innerWidth;
+        gsap.to(horizontalItems, {
+          x: -scrollWidth,
+          ease: "none",
+          scrollTrigger: {
+            trigger: ".horizontal-container",
+            start: "top top",
+            end: () => `+=${scrollWidth}`,
+            scrub: 0.5,
+            pin: true,
+            invalidateOnRefresh: true,
+          },
+        });
       }
-    })
-    .to(".zoom-circle", { scale: 20, duration: 1 })
-    .to(".zoom-content", { opacity: 1, scale: 1.5 }, "<");
 
-    // --- 4. Road Shrinking Logic ---
+      // Zoom Section Logic
+      gsap.timeline({
+        scrollTrigger: {
+          trigger: ".zoom-container",
+          start: "top top",
+          end: "+=150%",
+          pin: true,
+          scrub: true,
+        }
+      })
+      .to(".zoom-circle", { scale: 30, duration: 1 })
+      .to(".zoom-content", { opacity: 1, scale: 1.2 }, "<");
+    }, containerRef);
+
     const handleRoad = () => {
-      const scroll = window.scrollY;
+      const scroll = window.pageYOffset || document.documentElement.scrollTop;
       const road = document.querySelector(".road") as HTMLElement;
       if (road) {
-        const h = Math.max(0, window.innerHeight - scroll * 1.2);
+        const h = Math.max(0, window.innerHeight - scroll * 1.5);
         road.style.height = `${h}px`;
       }
     };
@@ -78,74 +83,109 @@ export default function ModernEffectsPage() {
 
     return () => {
       window.removeEventListener("scroll", handleRoad);
-      ScrollTrigger.getAll().forEach(t => t.kill());
+      ctx.revert();
     };
   }, [isLoading]);
 
-  return (
-    <div ref={containerRef} className="relative bg-black text-white overflow-x-hidden selection:bg-white selection:text-black">
-      
+  const changeSlide = (dir: number) => {
+    setActiveIndex((prev) => (prev + dir + sliderData.length) % sliderData.length);
+  };
+
+return (
+    /* ADDED 'experience-wrapper' to the main container div */
+    <div 
+      ref={containerRef} 
+      className="experience-wrapper relative bg-[#050505] text-white overflow-x-hidden font-['Archivo']">
+      <style dangerouslySetInnerHTML={{ __html: `
+        @import url("https://api.fontshare.com/v2/css?f[]=archivo@100,200,300,400,500,600,700,800,900&f[]=clash-display@200,300,400,500,600,700&display=swap");
+        .clip-path-road { clip-path: polygon(48% 0%, 52% 0%, 100% 100%, 0% 100%); }
+        .slide-3d { transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
+      `}} />
+
       {/* LOADING SCREEN */}
       {isLoading && (
-        <div className="fixed inset-0 bg-white z-[10000] flex flex-col justify-end p-10">
-          <div className="absolute bottom-0 left-0 h-full bg-black transition-all duration-300" style={{ width: `${progress}%`, mixBlendMode: 'difference' }} />
-          <h1 className="text-[20vw] font-black mix-blend-difference text-white leading-none">{progress}%</h1>
+        <div className="fixed inset-0 bg-white z-[10000] flex flex-col justify-end p-6 md:p-10 text-black">
+          <div className="absolute bottom-0 left-0 h-full bg-black transition-all duration-300" style={{ width: `${progress}%` }} />
+          <h1 className="text-[25vw] md:text-[20vw] font-black z-10 leading-none tracking-tighter">{progress}%</h1>
         </div>
       )}
 
       {/* HERO SECTION */}
-      <section className="hero h-screen flex flex-col justify-end items-center relative overflow-hidden">
+      <section className="hero h-screen flex flex-col justify-end items-center relative overflow-hidden bg-black">
         <div className="sun flex flex-col items-center justify-end w-full h-full">
-          <div className="semicircle w-[40%] h-[20vw] bg-white rounded-t-full mix-blend-difference" />
+          <div className="semicircle w-[80%] md:w-[40%] h-[40vw] md:h-[20vw] bg-white rounded-t-full mix-blend-difference" />
           <div className="line w-full h-[1px] bg-white" />
         </div>
         <div className="road bg-white w-full h-full mix-blend-difference clip-path-road" />
       </section>
 
       {/* CONTENT PART 1 */}
-      <section className="part1 bg-white py-20 px-10 min-h-screen">
-        <h2 className="fixed top-0 left-0 text-[14vw] font-black mix-blend-difference text-white pointer-events-none z-50">
-          TEZCO FLOW
-        </h2>
-        <div className="mt-[20vw] space-y-4 text-right">
+      <section className="part1 bg-white py-16 md:py-20 px-6 md:px-10 min-h-screen relative overflow-hidden">
+        <h2 className="fixed top-10 left-0 text-[20vw] md:text-[14vw] font-black mix-blend-difference text-white opacity-10 pointer-events-none z-0 leading-none">TEZCO FLOW</h2>
+        <div className="mt-[40vh] md:mt-[20vw] space-y-2 md:space-y-4 text-right relative z-10">
           {["BUILD BY", "TECHNICAL", "EXPERTS"].map((text, i) => (
-            <h3 key={i} className="text-[8vw] leading-[0.6] font-black text-black">
-              {text}
-            </h3>
+            <h3 key={i} className="text-[12vw] md:text-[8vw] leading-[0.7] font-black text-black uppercase">{text}</h3>
           ))}
         </div>
       </section>
 
-      {/* HORIZONTAL SCROLL SECTION */}
-      {/* Removed extra padding to keep layout tight */}
-      <div className="horizontal-container bg-black overflow-hidden">
-        <div className="horizontal-wrapper flex items-center h-screen">
-          <div ref={horizontalRef} className="flex gap-10 px-10">
-            <HorizontalCard title="Minimal UI" text="Clean interfaces for faster decisions." filled />
-            <HorizontalCard title="Smart UX" text="Designed around real user workflows." />
-            <HorizontalCard title="Motion Design" text="Animations that guide, not distract." filled />
-            <HorizontalCard title="Grid Systems" text="Structured layouts for scalable design." />
+      {/* 3D CARD SLIDER SECTION */}
+      <div className="horizontal-container bg-black min-h-screen flex items-center justify-center overflow-hidden relative">
+        <div className="relative w-full max-w-7xl flex flex-col items-center justify-center px-4">
+          
+          {/* Controls */}
+          <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between px-2 md:px-4 z-50 pointer-events-none">
+            <button onClick={() => changeSlide(-1)} className="pointer-events-auto p-3 md:p-4 bg-white/5 backdrop-blur-md rounded-full border border-white/10 hover:bg-white/20 transition-all">
+              <ChevronLeft size={24} className="md:w-10 md:h-10 text-white" />
+            </button>
+            <button onClick={() => changeSlide(1)} className="pointer-events-auto p-3 md:p-4 bg-white/5 backdrop-blur-md rounded-full border border-white/10 hover:bg-white/20 transition-all">
+              <ChevronRight size={24} className="md:w-10 md:h-10 text-white" />
+            </button>
+          </div>
+
+          <div ref={horizontalRef} className="flex items-center justify-center gap-6 md:gap-16 py-10 md:py-20">
+            {sliderData.map((card, i) => {
+              const offset = i - activeIndex;
+              const isCurrent = i === activeIndex;
+              
+              return (
+                <div key={i} 
+                  className="slide-3d relative w-[260px] h-[380px] md:w-[320px] md:h-[480px] shrink-0"
+                  style={{
+                    transform: `
+                      perspective(1200px) 
+                      translateX(${offset * (window?.innerWidth < 768 ? 40 : 60)}px) 
+                      rotateY(${offset * -35}deg) 
+                      scale(${isCurrent ? 1.1 : 0.75})
+                    `,
+                    zIndex: isCurrent ? 30 : 20 - Math.abs(offset),
+                    opacity: Math.abs(offset) > 1 ? 0 : 1, // Hide far cards on mobile
+                  }}
+                >
+                  <div className={`w-full h-full rounded-3xl overflow-hidden border ${isCurrent ? 'border-white/40' : 'border-white/10'} shadow-2xl`}>
+                    <img src={card.img} alt={card.title} className={`w-full h-full object-cover transition-all duration-1000 ${isCurrent ? 'scale-110 brightness-75' : 'scale-100 brightness-50'}`} />
+                    
+                    {isCurrent && (
+                      <div className="absolute bottom-4 -left-6 md:bottom-6 md:-left-12 z-40 p-5 md:p-8 w-[280px] md:min-w-[340px] backdrop-blur-xl bg-black/60 rounded-2xl border border-white/10 shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-500">
+                        <p className="text-cyan-400 font-bold uppercase tracking-[0.2em] text-[10px] mb-1 font-['Clash_Display']">{card.sub}</p>
+                        <h4 className="text-2xl md:text-4xl font-black text-white uppercase leading-none font-['Clash_Display'] mb-2">{card.title}</h4>
+                        <p className="text-[11px] md:text-sm text-white/70 leading-relaxed font-light">{card.desc}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
 
       {/* ZOOM SECTION */}
-      <div className="zoom-container h-screen bg-white flex items-center justify-center overflow-hidden">
-        <h2 className="text-6xl font-black text-black z-10 mix-blend-difference">SCROLL TO ZOOM</h2>
-        <div className="zoom-circle absolute w-[30vw] h-[30vw] bg-black rounded-full mix-blend-difference scale-0" />
-        <div className="zoom-content absolute opacity-0 text-white text-9xl font-black">THE END</div>
+      <div className="zoom-container h-screen bg-white flex flex-col items-center justify-center overflow-hidden px-6 text-center">
+        <h2 className="text-4xl md:text-7xl font-black text-black z-10 leading-tight">TEZCO HERE TO</h2>
+        <div className="zoom-circle absolute w-[40vw] h-[40vw] bg-black rounded-full scale-0" />
+        <div className="zoom-content absolute opacity-0 text-white text-[12vw] md:text-[10vw] font-black uppercase">HELP YOU</div>
       </div>
-
-      {/* REMOVED: Extra h-[100vh] div that was causing blank space */}
-    </div>
-  );
-}
-
-function HorizontalCard({ title, text, filled = false }: { title: string, text: string, filled?: boolean }) {
-  return (
-    <div className={`min-w-[50vw] h-[60vh] p-10 rounded-[5vw] border-4 border-white flex flex-col justify-between ${filled ? 'bg-white text-black' : 'text-white'}`}>
-      <h4 className="text-4xl md:text-6xl font-black">{title}</h4>
-      <p className="text-xl md:text-2xl font-medium">{text}</p>
     </div>
   );
 }

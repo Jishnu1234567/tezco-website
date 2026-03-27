@@ -86,8 +86,9 @@ export default function Services() {
 
     const drag = Draggable.create(dragger, {
       type: "x",
-      onDragStart: (e) => xPos = Math.round(e.touches ? e.touches[0].clientX : e.clientX),
-      onDrag: (e) => {
+onDragStart: (e) => { 
+  xPos = Math.round(e.touches ? e.touches[0].clientX : e.clientX); 
+},      onDrag: (e) => {
         const cx = e.touches ? e.touches[0].clientX : e.clientX;
         rotateRing(-(cx - xPos) * 0.5); xPos = Math.round(cx);
       },

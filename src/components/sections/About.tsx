@@ -61,10 +61,11 @@ export default function AboutTezco() {
     { scope: containerRef }
   );
 
-  return (
+ return (
     <section
       ref={triggerRef}
-      className="relative min-h-screen py-32 flex items-center overflow-hidden bg-[#010103] border-y border-white/5"
+      /* ADDED 'experience-wrapper' HERE */
+      className="experience-wrapper relative min-h-screen py-32 flex items-center overflow-hidden bg-[#010103] border-y border-white/5"
     >
       <style jsx global>{`
         .masked-tezco-text {

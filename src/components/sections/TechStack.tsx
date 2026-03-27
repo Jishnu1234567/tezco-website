@@ -1,159 +1,250 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+import * as THREE from "three";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
 
-const TECHNOLOGIES = [
-  "Next.js", "React", "Three.js", "Tailwind", 
-  "Supabase", "Django", "Framer", "TypeScript", "AnimeJS"
-];
-
-export default function TechStack() {
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const circleRef = useRef<HTMLUListElement>(null);
-  const logoRef = useRef<HTMLDivElement>(null);
-  const mouseRef = useRef<SVGSVGElement>(null);
+export default function UltimateExperience() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const leftSideRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
 
-    // 1. Rotate the entire circle based on scroll
-    gsap.to(circleRef.current, {
-      scrollTrigger: {
-        trigger: sectionRef.current,
+    // --- 1. THREE.JS FLOATING PARTICLES (Experience Class Logic) ---
+    let renderer: THREE.WebGLRenderer, scene: THREE.Scene, camera: THREE.PerspectiveCamera;
+    let meshes: THREE.Mesh[] = [];
+    const clock = new THREE.Clock();
+
+    const initThree = () => {
+      scene = new THREE.Scene();
+      camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 1000);
+      camera.position.z = 5;
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      canvasRef.current?.appendChild(renderer.domElement);
+
+      // Lights
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+      scene.add(ambientLight);
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      directionalLight.position.set(5, 3, 2);
+      scene.add(directionalLight);
+
+      // Create Floating Boxes
+      const geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+      const material = new THREE.MeshLambertMaterial({ color: 0xffffff });
+
+      for (let i = 0; i < 45; i++) {
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set(
+          (Math.random() - 0.5) * 10,
+          (Math.random() - 0.5) * 15,
+          (Math.random() - 0.5) * 10
+        );
+        mesh.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+        mesh.userData.rotationSpeed = Math.random() * 0.01 + 0.005;
+        scene.add(mesh);
+        meshes.push(mesh);
+      }
+    };
+
+    const animate = () => {
+      const time = clock.getElapsedTime();
+      const scaleEffect = 0.2 + 0.05 * Math.sin(Math.PI * 2 * (time / 8));
+
+      meshes.forEach((m) => {
+        m.scale.set(scaleEffect, scaleEffect, scaleEffect);
+        m.rotation.x += m.userData.rotationSpeed;
+        m.rotation.y += m.userData.rotationSpeed;
+      });
+
+      renderer.render(scene, camera);
+      requestAnimationFrame(animate);
+    };
+
+    initThree();
+    animate();
+
+    // --- 2. GSAP SCROLL TRIGGERS (Lyrics & Camera) ---
+    const ctx = gsap.context(() => {
+      // Light up spans on scroll
+      document.querySelectorAll(".lyric-content span").forEach((span) => {
+        gsap.to(span, {
+          scrollTrigger: {
+            trigger: span,
+            start: "top 80%",
+            end: "bottom 20%",
+            onUpdate: (self) => {
+              const dist = Math.abs(self.progress - 0.5);
+              const lightness = 80 + (0.5 - dist) * 40; // Map to 80-100%
+              (span as HTMLElement).style.setProperty("--l", `${lightness}%`);
+            },
+          },
+        });
+      });
+
+      // Move Three.js Camera on Scroll
+      ScrollTrigger.create({
+        trigger: ".experience-wrapper",
         start: "top top",
         end: "bottom bottom",
-        scrub: 1, // Smoothly ties the rotation to the scrollbar
-      },
-      rotate: 360,
-      ease: "none",
-    });
-
-    // 2. Animate the individual characters (The "Scramble" effect)
-    const chars = gsap.utils.toArray<HTMLElement>(".tech-char");
-    chars.forEach((char) => {
-      const charIndex = parseInt(char.style.getPropertyValue("--char-index"));
-      const angleDelta = 35; // Matches your original CSS variable
-      
-      gsap.fromTo(char, 
-        { rotate: charIndex * angleDelta }, // Start scrambled
-        {
-          rotate: 0, // End aligned
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: "top top",
-            end: "bottom bottom",
-            scrub: 1,
-          },
-          ease: "none",
+        onUpdate: (self) => {
+          const cameraRange = 8;
+          camera.position.y = (0.5 - self.progress) * (cameraRange * 2);
         }
-      );
-    });
+      });
 
-    // 3. Reveal Logo at the end of the scroll
-    gsap.fromTo(logoRef.current, 
-      { opacity: 0, scale: 0.8, filter: "blur(10px)" },
-      {
-        opacity: 1, scale: 1, filter: "blur(0px)",
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: "80% center", // Starts revealing near the end
-          end: "95% center",
-          scrub: true,
+      // Split Screen Resize Logic
+      const handleMove = (e: MouseEvent | TouchEvent) => {
+        const clientX = 'clientX' in e ? e.clientX : e.touches[0].clientX;
+        const percentage = (clientX / window.innerWidth) * 100;
+        if (leftSideRef.current) {
+          leftSideRef.current.style.width = `${percentage}%`;
         }
-      }
-    );
+      };
 
-    // 4. Fade out mouse icon
-    gsap.to(mouseRef.current, {
-      opacity: 0,
-      scrollTrigger: {
-        trigger: sectionRef.current,
-        start: "top top",
-        end: "20% top",
-        scrub: true,
-      }
-    });
+      window.addEventListener("mousemove", handleMove);
+      window.addEventListener("touchstart", handleMove);
+    }, containerRef);
+
+    // Resize Handler
+    const handleResize = () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    };
+    window.addEventListener("resize", handleResize);
 
     return () => {
-      ScrollTrigger.getAll().forEach(t => t.kill());
+      ctx.revert();
+      window.removeEventListener("resize", handleResize);
+      renderer.dispose();
     };
   }, []);
 
   return (
-    <section ref={sectionRef} className="relative h-[400vh] bg-[#010103] w-full overflow-visible">
-      <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden">
-        
-        {/* Central Branding */}
-        <div ref={logoRef} className="absolute z-30 pointer-events-none flex flex-col items-center justify-center">
-          <div className="flex flex-col items-center">
-             <span className="text-4xl md:text-6xl font-black tracking-tighter text-white">
-                TEZ<span className="text-cyan-500">CO</span>
-             </span>
-             <div className="w-12 h-[2px] bg-cyan-500 mt-1 shadow-[0_0_20px_#00f2ff]"></div>
-          </div>
-        </div>
+    <div ref={containerRef} className="experience-wrapper relative w-full bg-[#111] overflow-x-hidden">
+      <style dangerouslySetInnerHTML={{ __html: `
+        @import url('https://fonts.googleapis.com/css2?family=Work+Sans:wght@800&family=Montserrat:wght@800&family=Permanent+Marker&display=swap');
 
-        {/* Mouse Indicator */}
-        <div className="absolute z-20 pointer-events-none">
-          <svg 
-            ref={mouseRef}
-            xmlns="http://www.w3.org/2000/svg" 
-            width="50" height="50" 
-            viewBox="0 0 24 40" 
-            fill="none" 
-            stroke="#00f2ff" 
-            strokeWidth="1.5" 
-            className="animate-bounce"
-          >
-            <path d="M6 3m0 4a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v10a4 4 0 0 1 -4 4h-4a4 4 0 0 1 -4 -4z" />
-            <path d="M12 7l0 4" />
-          </svg>
-        </div>
-
-        {/* Circular Technologies */}
-        <ul ref={circleRef} className="relative w-[80vw] h-[80vw] md:w-[30vw] md:h-[30vw] list-none p-0 m-0">
-          {TECHNOLOGIES.map((tech, techIndex) => (
-            <li 
-              key={techIndex} 
-              className="absolute inset-1/2"
-              style={{ 
-                transform: `rotate(${(360 / TECHNOLOGIES.length) * techIndex}deg)` 
-              } as any}
-            >
-              {tech.split("").map((char, charIndex) => (
-                <span 
-                  key={charIndex} 
-                  className="tech-char absolute top-1/2 left-1/2 origin-[0_0] text-cyan-500/80 font-mono font-bold uppercase whitespace-nowrap"
-                  style={{ 
-                    '--char-index': charIndex + 1,
-                    fontSize: 'clamp(0.8rem, 2vw, 2rem)',
-                    // Positioning logic moved from CSS to inline for reliability
-                    marginLeft: `calc(15vw + ${charIndex * 1.2}ch)` 
-                  } as any}
-                >
-                  {char}
-                </span>
-              ))}
-            </li>
-          ))}
-        </ul>
-
-        {/* Background Glow */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(0,242,255,0.05)_0%,transparent_70%)] pointer-events-none" />
-      </div>
-
-      <style jsx>{`
-        .tech-char {
-          transition: color 0.3s ease, text-shadow 0.3s ease;
+        .lyric-content {
+          color: white;
+          font-family: "Work Sans", sans-serif;
+          padding: 10vw 5vw;
+          font-size: clamp(24px, 6vw, 100px);
+          line-height: 1.1;
+          z-index: 10;
+          position: relative;
         }
-        .tech-char:hover {
-          color: #fff;
-          text-shadow: 0 0 15px #00f2ff;
-          z-index: 50;
+
+        .lyric-content span {
+          --h: 200; --s: 100%; --l: 80%;
+          position: relative;
+          color: hsl(var(--h), var(--s), var(--l));
+          background: linear-gradient(to right, hsl(var(--h), 100%, 80%), hsl(calc(var(--h) + 30), 100%, 80%));
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          transition: --l 0.1s linear;
         }
-      `}</style>
-    </section>
+
+        /* Split Screen Section */
+        .split-container {
+          position: relative;
+          height: 100vh;
+          width: 100vw;
+          overflow: hidden;
+          background-color: #e0e4d8; /* Right side color */
+        }
+
+        .side {
+          display: grid;
+          height: 100vh;
+          place-items: center;
+          position: absolute;
+          width: 100%;
+          overflow: hidden;
+        }
+
+        .side .title {
+          font-family: "Montserrat", sans-serif;
+          font-size: 7vw;
+          font-weight: 800;
+          margin: 0 10vw;
+          width: 80vw;
+        }
+
+        .side .fancy {
+          font-family: "Permanent Marker", cursive;
+          font-size: 1.8em;
+          line-height: 0.6em;
+        }
+
+        #left-side {
+          background-color: #000000;
+          width: 60%;
+          z-index: 2;
+          border-right: 4px solid #359fe6;
+        }
+
+        #left-side .title { color: white; }
+        #left-side .fancy { color: #33caef; }
+        #right-side .title { color: #000000; }
+        #right-side .fancy { color: #33caef; }
+
+        .three-canvas-container {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+          z-index: 1;
+          opacity: 0.8;
+        }
+
+        .three-canvas-container:after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(to bottom, #111 0%, transparent 15%, transparent 85%, #111 100%);
+        }
+      `}} />
+
+      {/* Floating Particles background */}
+      <div ref={canvasRef} className="three-canvas-container" />
+
+      {/* 1. LYRICS SECTION */}
+      <section className="lyric-content">
+       <p>
+    Technical experts building in the heart of <span style={{"--h": 165} as any}>innovation</span><br />
+    Take these legacy <span style={{"--h": 170} as any}>systems</span> and learn to scale<br />
+    All your life<br />
+    You were only <span style={{"--h": 175} as any}>waiting</span> for this stack to arise<br />
+    
+  </p>
+      </section>
+
+      {/* 2. SPLIT SCREEN INTERACTIVE SECTION */}
+      <section className="split-container">
+        <div ref={leftSideRef} id="left-side" className="side">
+          <h2 className="title">
+            Sometimes a simple header is <span className="fancy">better</span>
+          </h2>
+        </div>
+        <div id="right-side" className="side">
+          <h2 className="title">
+            Sometimes a simple header is <span className="fancy">worse</span>
+          </h2>
+        </div>
+      </section>
+
+      {/* Spacing for scroll effect */}
+      <div className="h-[50vh]" />
+    </div>
   );
 }

@@ -1,14 +1,17 @@
-import Hero from "@/components/sections/Hero";
-import About from "@/components/sections/About"; 
-import Services from "@/components/sections/Services";
-import Process from "@/components/sections/Process";
-import TechStack from "@/components/sections/TechStack";
-import DataCore from "@/components/sections/DataCore";
-// No need to import Navbar here if it's already in layout.tsx
+"use client"; // <--- ADD THIS LINE AT THE TOP
+
+import dynamic from 'next/dynamic';
+
+// Dynamically import components that use window, GSAP, or Three.js
+const Hero = dynamic(() => import("@/components/sections/Hero"), { ssr: false });
+const About = dynamic(() => import("@/components/sections/About"), { ssr: false });
+const Services = dynamic(() => import("@/components/sections/Services"), { ssr: false });
+const Process = dynamic(() => import("@/components/sections/Process"), { ssr: false });
+const TechStack = dynamic(() => import("@/components/sections/TechStack"), { ssr: false });
+const DataCore = dynamic(() => import("@/components/sections/DataCore"), { ssr: false });
 
 export default function Home() {
   return (
-    // 'flex flex-col' ensures sections stack perfectly on mobile
     <div className="flex flex-col w-full">
       <section id="home" className="mobile-safe-section">
         <Hero />
@@ -26,7 +29,6 @@ export default function Home() {
         <Process />
       </section>
       
-      {/* TechStack usually doesn't need an ID for nav, but needs scaling */}
       <section className="mobile-safe-section">
         <TechStack />
       </section>
