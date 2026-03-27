@@ -55,3 +55,13 @@ html.lenis, html.lenis body {
 .lenis.lenis-smooth [data-lenis-prevent] {
   overscroll-behavior: contain;
 }
+
+/* Add this to your globals.css */
+.horizontal-container, .experience-wrapper {
+  content-visibility: auto;
+  contain-intrinsic-size: 1000px;
+}
+
+canvas {
+  pointer-events: none; /* Prevents touch conflicts */
+}

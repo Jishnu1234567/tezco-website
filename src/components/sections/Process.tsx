@@ -17,9 +17,8 @@ export default function ModernEffectsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeIndex, setActiveIndex] = useState(1);
 
-  // OPTIMIZED: Images set to 800px width for mobile performance
   const sliderData = [
-    { title: "Minimal UI", sub: "Precision", desc: "Clean interfaces designed to reduce cognitive load.", img: "https://images.unsplash.com/photo-1558655146-d09347e92766?q=80&w=800&auto=format&fit=crop" },
+    { title: "Minimal UI", sub: "Precision", desc: "Clean interfaces designed to reduce cognitive load.", img: "https://images.unsplash.com/photo-1558655146-d09347e92766?q=80&w=2000&auto=format&fit=crop" },
     { title: "Smart UX", sub: "Intuitive", desc: "Architecting seamless user journeys that feel natural.", img: "https://codestrup.com/wp-content/uploads/2023/09/ui-ux-design-services-banner-1024x683.webp" },
     { title: "Motion Design", sub: "Dynamics", desc: "Purposeful animations that guide users.", img: "https://tse4.mm.bing.net/th/id/OIP._WQYw9u_NI6bKqjzGivfdAHaEK?rs=1&pid=ImgDetMain&o=7&rm=3" },
     { title: "Grid Systems", sub: "Structure", desc: "Mathematical layouts ensuring perfect scalability.", img: "https://media.geeksforgeeks.org/wp-content/uploads/20230209170229/Grid-System-In-UI-Design.gif" }
@@ -40,6 +39,7 @@ export default function ModernEffectsPage() {
     if (isLoading) return;
 
     const ctx = gsap.context(() => {
+      // Horizontal Scroll Logic
       const horizontalItems = horizontalRef.current;
       if (horizontalItems) {
         const scrollWidth = horizontalItems.scrollWidth - window.innerWidth;
@@ -52,26 +52,47 @@ export default function ModernEffectsPage() {
             end: () => `+=${scrollWidth}`,
             scrub: 0.5,
             pin: true,
-            anticipatePin: 1, // Fixes mobile stutter
             invalidateOnRefresh: true,
           },
         });
       }
 
+      // Zoom Section Logic - Optimized for focus and color
       gsap.timeline({
         scrollTrigger: {
           trigger: ".zoom-container",
           start: "top top",
-          end: "+=150%",
+          end: "+=120%",
           pin: true,
           scrub: true,
         }
       })
-      .to(".zoom-circle", { scale: 30, duration: 1 })
-      .to(".zoom-content", { opacity: 1, scale: 1.2 }, "<");
+      .to(".zoom-circle", { scale: 50, duration: 1.5, ease: "power2.in" })
+      // Fade out the black text as the circle grows to keep background clean
+      .to(".tezco-bg-text", { opacity: 0, duration: 0.5 }, "-=1")
+      .to(".zoom-content", { 
+        opacity: 1, 
+        scale: 1, 
+        duration: 0.8,
+        ease: "back.out(1.7)" 
+      }, "-=0.8");
+
     }, containerRef);
 
-    return () => ctx.revert();
+    const handleRoad = () => {
+      const scroll = window.pageYOffset || document.documentElement.scrollTop;
+      const road = document.querySelector(".road") as HTMLElement;
+      if (road) {
+        const h = Math.max(0, window.innerHeight - scroll * 1.5);
+        road.style.height = `${h}px`;
+      }
+    };
+    window.addEventListener("scroll", handleRoad);
+
+    return () => {
+      window.removeEventListener("scroll", handleRoad);
+      ctx.revert();
+    };
   }, [isLoading]);
 
   const changeSlide = (dir: number) => {
@@ -79,13 +100,14 @@ export default function ModernEffectsPage() {
   };
 
   return (
-    <div ref={containerRef} className="experience-wrapper relative bg-[#050505] text-white overflow-x-hidden font-['Archivo']">
+    <div ref={containerRef} className="relative bg-[#050505] text-white overflow-x-hidden font-['Archivo']">
       <style dangerouslySetInnerHTML={{ __html: `
         @import url("https://api.fontshare.com/v2/css?f[]=archivo@100,200,300,400,500,600,700,800,900&f[]=clash-display@200,300,400,500,600,700&display=swap");
         .clip-path-road { clip-path: polygon(48% 0%, 52% 0%, 100% 100%, 0% 100%); }
-        .slide-3d { transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1); }
+        .slide-3d { transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
       `}} />
 
+      {/* LOADING SCREEN */}
       {isLoading && (
         <div className="fixed inset-0 bg-white z-[10000] flex flex-col justify-end p-6 md:p-10 text-black">
           <div className="absolute bottom-0 left-0 h-full bg-black transition-all duration-300" style={{ width: `${progress}%` }} />
@@ -93,14 +115,33 @@ export default function ModernEffectsPage() {
         </div>
       )}
 
+      {/* HERO SECTION */}
+      <section className="hero h-screen flex flex-col justify-end items-center relative overflow-hidden bg-black">
+        <div className="sun flex flex-col items-center justify-end w-full h-full">
+          <div className="semicircle w-[80%] md:w-[40%] h-[40vw] md:h-[20vw] bg-white rounded-t-full mix-blend-difference" />
+          <div className="line w-full h-[1px] bg-white" />
+        </div>
+        <div className="road bg-white w-full h-full mix-blend-difference clip-path-road" />
+      </section>
+
+      {/* CONTENT PART 1 */}
+      <section className="part1 bg-white py-16 md:py-20 px-6 md:px-10 min-h-screen relative overflow-hidden">
+        <h2 className="fixed top-10 left-0 text-[20vw] md:text-[14vw] font-black mix-blend-difference text-white opacity-10 pointer-events-none z-0 leading-none">TEZCO FLOW</h2>
+        <div className="mt-[40vh] md:mt-[20vw] space-y-2 md:space-y-4 text-right relative z-10">
+          {["BUILD BY", "TECHNICAL", "EXPERTS"].map((text, i) => (
+            <h3 key={i} className="text-[12vw] md:text-[8vw] leading-[0.7] font-black text-black uppercase">{text}</h3>
+          ))}
+        </div>
+      </section>
+
       {/* 3D CARD SLIDER SECTION */}
       <div className="horizontal-container bg-black min-h-screen flex items-center justify-center overflow-hidden relative">
         <div className="relative w-full max-w-7xl flex flex-col items-center justify-center px-4">
           <div className="absolute top-1/2 -translate-y-1/2 w-full flex justify-between px-2 md:px-4 z-50 pointer-events-none">
-            <button onClick={() => changeSlide(-1)} className="pointer-events-auto p-3 md:p-4 bg-white/5 backdrop-blur-md rounded-full border border-white/10">
+            <button onClick={() => changeSlide(-1)} className="pointer-events-auto p-3 md:p-4 bg-white/5 backdrop-blur-md rounded-full border border-white/10 hover:bg-white/20 transition-all">
               <ChevronLeft size={24} className="md:w-10 md:h-10 text-white" />
             </button>
-            <button onClick={() => changeSlide(1)} className="pointer-events-auto p-3 md:p-4 bg-white/5 backdrop-blur-md rounded-full border border-white/10">
+            <button onClick={() => changeSlide(1)} className="pointer-events-auto p-3 md:p-4 bg-white/5 backdrop-blur-md rounded-full border border-white/10 hover:bg-white/20 transition-all">
               <ChevronRight size={24} className="md:w-10 md:h-10 text-white" />
             </button>
           </div>
@@ -109,29 +150,22 @@ export default function ModernEffectsPage() {
             {sliderData.map((card, i) => {
               const offset = i - activeIndex;
               const isCurrent = i === activeIndex;
-              const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
-              
               return (
                 <div key={i} 
                   className="slide-3d relative w-[260px] h-[380px] md:w-[320px] md:h-[480px] shrink-0"
                   style={{
-                    transform: `
-                      perspective(1200px) 
-                      translateX(${offset * (isMobile ? 30 : 60)}px) 
-                      rotateY(${offset * (isMobile ? -15 : -35)}deg) 
-                      scale(${isCurrent ? 1 : 0.8})
-                    `,
+                    transform: `perspective(1200px) translateX(${offset * 60}px) rotateY(${offset * -35}deg) scale(${isCurrent ? 1.1 : 0.75})`,
                     zIndex: isCurrent ? 30 : 20 - Math.abs(offset),
                     opacity: Math.abs(offset) > 1 ? 0 : 1,
                   }}
                 >
-                  <div className={`w-full h-full rounded-3xl overflow-hidden border ${isCurrent ? 'border-white/40' : 'border-white/10'} shadow-2xl bg-[#111]`}>
-                    <img src={card.img} alt={card.title} className={`w-full h-full object-cover transition-all duration-1000 ${isCurrent ? 'scale-105 brightness-75' : 'scale-100 brightness-50'}`} />
+                  <div className={`w-full h-full rounded-3xl overflow-hidden border ${isCurrent ? 'border-white/40' : 'border-white/10'} shadow-2xl`}>
+                    <img src={card.img} alt={card.title} className={`w-full h-full object-cover transition-all duration-1000 ${isCurrent ? 'scale-110 brightness-75' : 'scale-100 brightness-50'}`} />
                     {isCurrent && (
-                      <div className="absolute bottom-4 -left-4 md:bottom-6 md:-left-12 z-40 p-5 md:p-8 w-[280px] md:min-w-[340px] backdrop-blur-xl bg-black/60 rounded-2xl border border-white/10 shadow-2xl">
-                        <p className="text-cyan-400 font-bold uppercase tracking-[0.2em] text-[10px] mb-1">{card.sub}</p>
-                        <h4 className="text-2xl md:text-4xl font-black text-white uppercase leading-none mb-2">{card.title}</h4>
-                        <p className="text-[11px] md:text-sm text-white/70 leading-relaxed">{card.desc}</p>
+                      <div className="absolute bottom-4 -left-6 md:bottom-6 md:-left-12 z-40 p-5 md:p-8 w-[280px] md:min-w-[340px] backdrop-blur-xl bg-black/60 rounded-2xl border border-white/10 shadow-2xl">
+                        <p className="text-cyan-400 font-bold uppercase tracking-[0.2em] text-[10px] mb-1 font-['Clash_Display']">{card.sub}</p>
+                        <h4 className="text-2xl md:text-4xl font-black text-white uppercase leading-none font-['Clash_Display'] mb-2">{card.title}</h4>
+                        <p className="text-[11px] md:text-sm text-white/70 leading-relaxed font-light">{card.desc}</p>
                       </div>
                     )}
                   </div>
@@ -141,13 +175,18 @@ export default function ModernEffectsPage() {
           </div>
         </div>
       </div>
-      {/* ... other sections remain the same ... */}
 
-      {/* ZOOM SECTION */}
-      <div className="zoom-container h-screen bg-white flex flex-col items-center justify-center overflow-hidden px-6 text-center">
-        <h2 className="text-4xl md:text-7xl font-black text-black z-10 leading-tight">TEZCO HERE TO</h2>
-        <div className="zoom-circle absolute w-[40vw] h-[40vw] bg-black rounded-full scale-0" />
-        <div className="zoom-content absolute opacity-0 text-white text-[12vw] md:text-[10vw] font-black uppercase">HELP YOU</div>
+      {/* ZOOM SECTION - UPDATED FOR FOCUS & CYAN COLOR */}
+      <div className="zoom-container h-screen bg-white flex flex-col items-center justify-center overflow-hidden px-6 text-center relative">
+        <h2 className="tezco-bg-text text-4xl md:text-7xl font-black text-black z-10 leading-tight">TEZCO HERE TO</h2>
+        
+        {/* The black circle stays small until scroll triggers expansion */}
+        <div className="zoom-circle absolute w-[100px] h-[100px] bg-black rounded-full scale-0 z-20" />
+        
+        {/* HELP YOU text adjusted to Cyan-400 to match the brand accents */}
+        <div className="zoom-content absolute opacity-0 text-cyan-400 text-[12vw] md:text-[10vw] font-black uppercase z-30">
+          HELP YOU
+        </div>
       </div>
     </div>
   );
