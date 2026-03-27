@@ -15,10 +15,7 @@ body {
 }
 
 /* Ensure smooth flow for Lenis/SmoothScroll */
-html {
-  scroll-behavior: smooth;
-  overflow-x: hidden;
-}
+
 
 /* Hide Custom Cursor on Mobile/Touch Devices */
 @media (pointer: coarse) {

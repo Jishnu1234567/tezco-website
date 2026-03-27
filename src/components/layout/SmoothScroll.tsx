@@ -1,19 +1,23 @@
 "use client";
 
 import { ReactLenis } from 'lenis/react';
-import { ReactNode } from "react";
+import React, { ReactNode } from "react";
 
-export default function SmoothScroll({ children }: { children: ReactNode }) {
+interface SmoothScrollProps {
+  children: ReactNode;
+}
+
+export default function SmoothScroll({ children }: SmoothScrollProps) {
   return (
     <ReactLenis 
       root 
       options={{ 
         lerp: 0.1,      
-        duration: 1.2, // Slightly faster duration feels better on modern webs
+        duration: 1.2,
         smoothWheel: true,
-        // --- MOBILE & TOUCH FIXES ---
-        syncTouch: false,   // Crucial: Let the browser handle touch natively
-        touchMultiplier: 2, // Use this instead of touchInertiaMultiplier
+        // --- UPDATED FOR MODERN LENIS ---
+        syncTouch: false,   // Crucial: Let the mobile browser handle touch naturally
+        touchMultiplier: 2, // This replaces the old inertia multiplier
         wheelMultiplier: 1,
         infinite: false,
       }}
