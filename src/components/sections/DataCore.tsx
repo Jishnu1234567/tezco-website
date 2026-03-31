@@ -85,7 +85,7 @@ export default function ContactFooter() {
                 </div>
                 <div>
                   <p className="text-[10px] uppercase tracking-widest text-gray-500">Email us</p>
-                  <p className="text-lg font-medium">hello@tezco.studio</p>
+                  <p className="text-lg font-medium">tezcoservices@gmail.com</p>
                 </div>
               </div>
               <div className="flex items-center gap-4 text-gray-300 group">

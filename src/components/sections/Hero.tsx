@@ -52,7 +52,7 @@ function DataCoreScene() {
 
     // --- Logo ---
     const textureLoader = new THREE.TextureLoader();
-    const logoTexture = textureLoader.load('/tezco-logo.png'); 
+    const logoTexture = textureLoader.load('/TEZCO (2).png'); 
     logoTexture.colorSpace = THREE.SRGBColorSpace;
     
     const logoMat = new THREE.MeshStandardMaterial({ 

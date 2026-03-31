@@ -162,47 +162,7 @@ function SplitSection() {
     letterSpacing: "-0.02em",
   };
 
-  return (
-    <section style={{
-      position: "relative", height: "100vh",
-      overflow: "hidden", background: "#e0e4d8",
-      cursor: "col-resize", userSelect: "none",
-      touchAction: "pan-y",
-    }}>
-      {/* Right */}
-      <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", background: "#e0e4d8", zIndex: 1 }}>
-        <h2 style={{ ...textStyle, color: "#000" }}>Deliver a Message, Our experts will reach out shortly</h2>
-      </div>
 
-      {/* Left */}
-      <div ref={leftRef} style={{ position: "absolute", top: 0, left: 0, bottom: 0, width: "50%", overflow: "hidden", background: "#000", zIndex: 2 }}>
-        <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", width: "100vw" }}>
-          <h2 style={{ ...textStyle, color: "#fff" }}>Ready to build something legendary?</h2>
-        </div>
-      </div>
-
-      {/* Handle */}
-      <div ref={handleRef} style={{ position: "absolute", top: 0, bottom: 0, left: "50%", width: 3, background: "#359fe6", zIndex: 10, pointerEvents: "none" }}>
-        <div style={{
-          position: "absolute", top: "50%", left: "50%",
-          transform: "translate(-50%,-50%)",
-          width: 40, height: 40, borderRadius: "50%",
-          background: "#359fe6", display: "grid", placeItems: "center",
-          color: "white", fontSize: 14,
-          boxShadow: "0 0 20px rgba(53,159,230,0.6)",
-          pointerEvents: "none",
-        }}>⟺</div>
-      </div>
-
-      <div style={{
-        position: "absolute", bottom: 20, left: "50%",
-        transform: "translateX(-50%)",
-        color: "rgba(0,0,0,0.35)", fontSize: 11,
-        letterSpacing: "0.2em", textTransform: "uppercase",
-        zIndex: 20, pointerEvents: "none", whiteSpace: "nowrap",
-      }}>drag to compare</div>
-    </section>
-  );
 }
 
 export default function UltimateExperience() {
@@ -213,7 +173,7 @@ export default function UltimateExperience() {
       `}} />
       <FloatingBoxes />
       <LyricSection />
-      <SplitSection />
+      
     </div>
   );
 }
