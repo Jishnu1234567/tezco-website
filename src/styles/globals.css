@@ -2,49 +2,33 @@
 @import "tailwindcss";
 
 :root {
-  --background: #050505; /* Set to your Tezco black */
+  --background: #050505;
   --foreground: #ededed;
+}
+
+/* 1. CORE RESET & MOBILE FIXES */
+html {
+  overflow-y: scroll;
+  height: auto;
+  background: var(--background);
+  /* Force smooth momentum scrolling on iOS */
+  -webkit-overflow-scrolling: touch; 
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
-  overflow-x: hidden; /* CRITICAL: Prevents horizontal scrolling on mobile */
+  overflow-x: hidden;
   width: 100%;
+  position: relative;
+  /* Prevents "bouncing" logic conflicts with Lenis */
+  overscroll-behavior-y: none; 
 }
 
-/* Ensure smooth flow for Lenis/SmoothScroll */
-
-
-/* Hide Custom Cursor on Mobile/Touch Devices */
-@media (pointer: coarse) {
-  .custom-cursor {
-    display: none !important;
-  }
-  * {
-    cursor: auto !important; /* Restore default touch behavior */
-  }
-}
-
-@layer utilities {
-  .perspective-1000 {
-    perspective: 1000px;
-  }
-  
-  /* Force sections to stay within screen bounds */
-  .mobile-safe-section {
-    width: 100vw;
-    max-width: 100%;
-    overflow: hidden;
-  }
-}
-
-.clip-path-road {
-  clip-path: polygon(50% 0, 100% 100%, 0 100%);
-}
-
-html.lenis, html.lenis body {
+/* 2. LENIS INTEGRATION (Cleaned & Optimized) */
+html.lenis, 
+html.lenis body {
   height: auto;
 }
 
@@ -56,12 +40,53 @@ html.lenis, html.lenis body {
   overscroll-behavior: contain;
 }
 
-/* Add this to your globals.css */
-.horizontal-container, .experience-wrapper {
+/* 3. PERFORMANCE & HARDWARE ACCELERATION */
+/* Apply this to any section that moves or fades on scroll */
+.scroll-section, 
+.experience-wrapper, 
+.horizontal-container {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform: translateZ(0); /* Forces GPU rendering */
+}
+
+/* Optimizes long pages by only rendering what is near the viewport */
+.horizontal-container, 
+.experience-wrapper {
   content-visibility: auto;
   contain-intrinsic-size: 1000px;
 }
 
+/* Prevent canvas/3D elements from blocking touch-to-scroll */
 canvas {
-  pointer-events: none; /* Prevents touch conflicts */
+  pointer-events: none; 
+}
+
+/* 4. UTILITIES */
+@layer utilities {
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  
+  .mobile-safe-section {
+    width: 100vw;
+    max-width: 100%;
+    overflow: hidden;
+  }
+}
+
+/* 5. INTERFACE & CURSOR */
+@media (pointer: coarse) {
+  .custom-cursor {
+    display: none !important;
+  }
+  * {
+    cursor: auto !important;
+    /* Disable long-press context menus on decorative elements */
+    -webkit-touch-callout: none;
+  }
+}
+
+.clip-path-road {
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
 }
