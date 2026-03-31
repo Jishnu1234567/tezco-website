@@ -15,7 +15,7 @@ const NAV_ITEMS = [
 // --- TEZCO LOGO COMPONENT ---
 const TezcoLogo = () => (
   // Increased height from h-12 to h-16 and width to w-52
-  <div className="relative h-35 w-35 flex items-center">
+  <div className="relative h-25 w-35 flex items-center">
     <img
       src="/Tezco-logo.png"
       alt="TEZCO"
