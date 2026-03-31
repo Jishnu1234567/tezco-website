@@ -13,12 +13,13 @@ const NAV_ITEMS = [
 ];
 
 // --- TEZCO LOGO COMPONENT ---
+// --- TEZCO LOGO COMPONENT (STABLE VERSION) ---
 const TezcoLogo = () => (
   <svg
     width="180"
     height="50"
     viewBox="0 0 450 150"
-    className="drop-shadow-[0_0_10px_rgba(56,189,248,0.4)] transition-all duration-300 hover:drop-shadow-[0_0_15px_rgba(56,189,248,0.7)]"
+    className="drop-shadow-[0_0_10px_rgba(56,189,248,0.4)]"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
   >
@@ -29,11 +30,11 @@ const TezcoLogo = () => (
       </linearGradient>
     </defs>
 
-    {/* Brand Text - Adjusted X to ensure no letters are cut off */}
+    {/* Brand Text - Using standard sans-serif to avoid Inter font errors */}
     <text 
       x="10" 
       y="95" 
-      fontFamily="Inter, sans-serif" 
+      fontFamily="sans-serif" 
       fontWeight="900" 
       fontSize="110" 
       fill="url(#logo-grad)" 
@@ -45,11 +46,11 @@ const TezcoLogo = () => (
     <text 
       x="12" 
       y="135" 
-      fontFamily="Inter, sans-serif" 
+      fontFamily="sans-serif" 
       fontWeight="600" 
       fontSize="26" 
       fill="url(#logo-grad)" 
-      style={{ textTransform: 'uppercase', letterSpacing: '5.5px', opacity: 0.9 }}
+      style={{ textTransform: 'uppercase', letterSpacing: '5.5px' }}
     >
       TECHNICAL EXPERTS
     </text>
