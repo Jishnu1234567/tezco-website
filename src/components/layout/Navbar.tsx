@@ -13,48 +13,16 @@ const NAV_ITEMS = [
 ];
 
 // --- TEZCO LOGO COMPONENT ---
-// --- TEZCO LOGO COMPONENT (STABLE VERSION) ---
 const TezcoLogo = () => (
-  <svg
-    width="180"
-    height="50"
-    viewBox="0 0 450 150"
-    className="drop-shadow-[0_0_10px_rgba(56,189,248,0.4)]"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <defs>
-      <linearGradient id="logo-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stopColor="#7DD3FC" />
-        <stop offset="100%" stopColor="#1D4ED8" />
-      </linearGradient>
-    </defs>
-
-    {/* Brand Text - Using standard sans-serif to avoid Inter font errors */}
-    <text 
-      x="10" 
-      y="95" 
-      fontFamily="sans-serif" 
-      fontWeight="900" 
-      fontSize="110" 
-      fill="url(#logo-grad)" 
-      letterSpacing="-4"
-    >
-      TEZCO
-    </text>
-    
-    <text 
-      x="12" 
-      y="135" 
-      fontFamily="sans-serif" 
-      fontWeight="600" 
-      fontSize="26" 
-      fill="url(#logo-grad)" 
-      style={{ textTransform: 'uppercase', letterSpacing: '5.5px' }}
-    >
-      TECHNICAL EXPERTS
-    </text>
-  </svg>
+  // Increased height from h-12 to h-16 and width to w-52
+  <div className="relative h-35 w-35 flex items-center">
+    <img
+      src="/Tezco-logo.png"
+      alt="TEZCO"
+      className="h-full w-auto object-contain drop-shadow-[0_0_12px_rgba(56,189,248,0.4)] transition-all duration-300 hover:scale-105"
+      draggable={false}
+    />
+  </div>
 );
 
 export default function Navbar() {
@@ -73,7 +41,8 @@ export default function Navbar() {
 
   return (
     <nav className={`fixed top-0 w-full z-[999] transition-all duration-500 ${
-      scrolled ? "py-3 bg-black/80 backdrop-blur-lg border-b border-white/5" : "py-8 bg-transparent"
+      // Slightly increased padding in scrolled state for the larger logo
+      scrolled ? "py-4 bg-black/80 backdrop-blur-lg border-b border-white/5" : "py-8 bg-transparent"
     }`}>
       <style dangerouslySetInnerHTML={{ __html: `
         .custom-nav {
@@ -89,7 +58,7 @@ export default function Navbar() {
         .nav-link {
           padding: 0.6rem 1.4rem;
           color: #a1a1aa;
-          font-size: 0.7rem;
+          font-size: 0.75rem;
           font-weight: 700;
           text-transform: uppercase;
           letter-spacing: 0.15em;
@@ -104,7 +73,7 @@ export default function Navbar() {
       `}} />
 
       <div className="container mx-auto px-6 lg:px-20 flex justify-between items-center relative z-[1001]">
-        <a href="#home" className="flex items-center transition-transform hover:scale-[1.02] active:scale-95">
+        <a href="#home" className="flex items-center transform active:scale-95">
           <TezcoLogo />
         </a>
 
@@ -126,7 +95,7 @@ export default function Navbar() {
           onClick={() => setIsOpen(!isOpen)} 
           className="md:hidden text-white p-2 relative z-[1002] transition-colors hover:text-cyan-400"
         >
-          {isOpen ? <X size={32} /> : <Menu size={32} />}
+          {isOpen ? <X size={36} /> : <Menu size={36} />}
         </button>
       </div>
 
@@ -166,7 +135,7 @@ export default function Navbar() {
               </div>
               
               <div className="mt-12 pt-12 border-t border-white/5">
-                <p className="text-cyan-500/60 text-xs tracking-[0.3em] uppercase font-bold">The Technical Experts</p>
+                <p className="text-cyan-500/60 text-xs tracking-[0.3em] uppercase font-bold">Engineering the Future</p>
               </div>
             </motion.div>
           </>
