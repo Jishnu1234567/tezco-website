@@ -20,13 +20,10 @@ const TECH_ICONS = [
   { label: "Rust",       color: "#CE422B", svg: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.634 11.945l-1.008-.623a13.44 13.44 0 0 0-.023-.29l.866-.76a.232.232 0 0 0-.063-.382l-1.094-.45a12.959 12.959 0 0 0-.07-.286l.712-.89a.232.232 0 0 0-.126-.368l-1.157-.27a13.37 13.37 0 0 0-.114-.272l.545-1.003a.232.232 0 0 0-.185-.343l-1.188-.083a12.75 12.75 0 0 0-.156-.251l.366-1.094a.232.232 0 0 0-.239-.308l-1.185.105a12.698 12.698 0 0 0-.195-.225l.18-1.152a.232.232 0 0 0-.288-.264l-1.148.29a12.655 12.655 0 0 0-.229-.196l-.013-1.162a.232.232 0 0 0-.329-.211l-1.08.47a12.703 12.703 0 0 0-.258-.162L16.43.953a.232.232 0 0 0-.36-.148l-.99.641a12.64 12.64 0 0 0-.282-.124L14.617.19a.232.232 0 0 0-.382.079l-.877.803a12.817 12.817 0 0 0-.3-.083l-.53-1.059a.232.232 0 0 0-.394 0l-.53 1.059a12.817 12.817 0 0 0-.3.083L10.428.12a.232.232 0 0 0-.382-.079l-.48 1.132a12.64 12.64 0 0 0-.282.124l-.99-.641a.232.232 0 0 0-.36.148l-.37 1.148a12.703 12.703 0 0 0-.258.162l-1.08-.47a.232.232 0 0 0-.329.211l-.013 1.162a12.655 12.655 0 0 0-.229.196l-1.148-.29a.232.232 0 0 0-.288.264l.18 1.152a12.698 12.698 0 0 0-.195.225L3.02 4.664a.232.232 0 0 0-.239.308l.366 1.094a12.75 12.75 0 0 0-.156.251l-1.188.083a.232.232 0 0 0-.185.343l.545 1.003a13.37 13.37 0 0 0-.114.272l-1.157.27a.232.232 0 0 0-.126.368l.712.89a12.959 12.959 0 0 0-.07.286l-1.094.45a.232.232 0 0 0-.063.382l.866.76a13.44 13.44 0 0 0-.023.29l-1.008.623a.232.232 0 0 0 0 .394l1.008.623c.007.097.015.194.023.29l-.866.76a.232.232 0 0 0 .063.382l1.094.45c.023.096.046.191.07.286l-.712.89a.232.232 0 0 0 .126.368l1.157.27c.037.091.075.182.114.272l-.545 1.003a.232.232 0 0 0 .185.343l1.188.083c.05.085.102.169.156.251l-.366 1.094a.232.232 0 0 0 .239.308l1.185-.105c.063.077.129.151.195.225l-.18 1.152a.232.232 0 0 0 .288.264l1.148-.29c.074.067.151.133.229.196l.013 1.162a.232.232 0 0 0 .329.211l1.08-.47c.084.055.17.109.258.162l.37 1.148a.232.232 0 0 0 .36.148l.99-.641c.092.043.186.084.282.124l.48 1.132a.232.232 0 0 0 .382.079l.877-.803c.099.028.199.056.3.083l.53 1.059a.232.232 0 0 0 .394 0l.53-1.059c.101-.027.201-.055.3-.083l.877.803a.232.232 0 0 0 .382-.079l.48-1.132c.096-.04.19-.081.282-.124l.99.641a.232.232 0 0 0 .36-.148l.37-1.148a12.703 12.703 0 0 0 .258-.162l1.08.47a.232.232 0 0 0 .329-.211l.013-1.162c.078-.063.155-.129.229-.196l1.148.29a.232.232 0 0 0 .288-.264l-.18-1.152c.066-.074.132-.148.195-.225l1.185.105a.232.232 0 0 0 .239-.308l-.366-1.094c.054-.082.106-.166.156-.251l1.188-.083a.232.232 0 0 0 .185-.343l-.545-1.003c.039-.09.077-.181.114-.272l1.157-.27a.232.232 0 0 0 .126-.368l-.712-.89c.024-.095.047-.19.07-.286l1.094-.45a.232.232 0 0 0 .063-.382l-.866-.76c.008-.096.016-.193.023-.29l1.008-.623a.232.232 0 0 0 0-.394zM12 16.847a4.847 4.847 0 1 1 0-9.694 4.847 4.847 0 0 1 0 9.694z"/></svg>` },
 ];
 
-// ─── Marquee row — zero JS, pure CSS transform, GPU only ─────────────────────
-// Renders icons TWICE. Keyframe shifts exactly -50% → second set snaps
-// invisibly to position 0. Works on every screen width, no stutter.
+// ─── Marquee: pure CSS transform, GPU composited, zero layout thrash ──────────
 const MarqueeRow = React.memo(({ reversed, duration }: { reversed: boolean; duration: string }) => {
   const icons = reversed ? [...TECH_ICONS].reverse() : TECH_ICONS;
   const cls   = reversed ? "mq-rev" : "mq-fwd";
-
   return (
     <div
       className="relative overflow-hidden py-2"
@@ -59,18 +56,85 @@ const MarqueeRow = React.memo(({ reversed, duration }: { reversed: boolean; dura
 });
 MarqueeRow.displayName = "MarqueeRow";
 
+// ─── Slider card — stable reference, no inline style recalc on scroll ─────────
+const SliderCard = React.memo(({
+  card, offset, active, onClick,
+}: {
+  card: { title: string; sub: string; desc: string; img: string };
+  offset: number;
+  active: boolean;
+  onClick: () => void;
+}) => {
+  const absOff = Math.abs(offset);
+  const hidden  = absOff > 1;
+
+  // All transforms computed once per render, not on every scroll tick
+  const transform = `perspective(1100px) translateX(${offset * 55}px) rotateY(${offset * -32}deg) scale(${active ? 1.05 : 0.76})`;
+
+  return (
+    <div
+      onClick={onClick}
+      className={`slider-card relative shrink-0 ${hidden ? "hidden md:block" : "block"}`}
+      style={{
+        width: "clamp(190px,50vw,300px)",
+        height: "clamp(280px,65vw,460px)",
+        transform,
+        opacity: absOff > 1 ? 0 : 1,
+        zIndex: active ? 30 : 20 - absOff,
+        cursor: active ? "default" : "pointer",
+        // contain layout & paint so this card's 3D transform is isolated
+        contain: "layout style",
+      }}
+    >
+      <div
+        className={`w-full h-full rounded-3xl overflow-hidden border shadow-2xl ${
+          active ? "border-white/40" : "border-white/10"
+        }`}
+      >
+        {/* Use loading="eager" only for the first two; lazy for others */}
+        <img
+          src={card.img}
+          alt={card.title}
+          loading={absOff <= 1 ? "eager" : "lazy"}
+          decoding="async"
+          className={`w-full h-full object-cover ${
+            active ? "scale-110 brightness-75" : "scale-100 brightness-50"
+          }`}
+          style={{ transition: "transform 0.7s cubic-bezier(0.22,1,0.36,1), filter 0.7s ease" }}
+        />
+      </div>
+      {active && (
+        <div
+          className="absolute z-40 p-4 md:p-6 backdrop-blur-xl bg-black/65 rounded-2xl border border-white/10 shadow-2xl"
+          style={{ bottom: "-16px", left: "clamp(-6px,-2vw,-32px)", minWidth: "clamp(150px,65%,300px)" }}
+        >
+          <p className="text-cyan-400 font-bold uppercase tracking-[0.2em] text-[9px] mb-1">{card.sub}</p>
+          <h4 className="font-black text-white uppercase leading-none mb-2"
+            style={{ fontSize: "clamp(16px,4.5vw,32px)" }}>{card.title}</h4>
+          <p className="text-white/65 leading-relaxed font-light"
+            style={{ fontSize: "clamp(10px,1.8vw,12px)" }}>{card.desc}</p>
+        </div>
+      )}
+    </div>
+  );
+});
+SliderCard.displayName = "SliderCard";
+
+// ─── Main page ────────────────────────────────────────────────────────────────
 export default function ModernEffectsPage() {
-  const containerRef  = useRef<HTMLDivElement>(null);
-  const roadRef       = useRef<HTMLDivElement>(null);
-  const [progress,    setProgress]    = useState(0);
-  const [isLoading,   setIsLoading]   = useState(true);
-  const [activeIndex, setActiveIndex] = useState(1);
+  const roadRef        = useRef<HTMLDivElement>(null);
+  const scrollRafRef   = useRef<number>(0);
+  const [progress,     setProgress]     = useState(0);
+  const [isLoading,    setIsLoading]    = useState(true);
+  const [activeIndex,  setActiveIndex]  = useState(1);
+  const touchStartX    = useRef(0);
+  const isAnimating    = useRef(false);
 
   const sliderData = [
-    { title: "Minimal UI",    sub: "Precision", desc: "Clean interfaces designed to reduce cognitive load.",    img: "https://images.unsplash.com/photo-1558655146-d09347e92766?q=80&w=2000&auto=format&fit=crop" },
-    { title: "Smart UX",      sub: "Intuitive", desc: "Architecting seamless user journeys that feel natural.", img: "https://images.unsplash.com/photo-1551650975-87deedd944c3?q=80&w=1200&fit=crop" },
-    { title: "Motion Design", sub: "Dynamics",  desc: "Purposeful animations that guide users.",               img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=1200&fit=crop" },
-    { title: "Grid Systems",  sub: "Structure", desc: "Mathematical layouts ensuring perfect scalability.",     img: "https://images.unsplash.com/photo-1586717791821-3f44a563fa4c?q=80&w=1200&fit=crop" },
+    { title: "Minimal UI",    sub: "Precision", desc: "Clean interfaces designed to reduce cognitive load.",    img: "https://images.unsplash.com/photo-1558655146-d09347e92766?q=80&w=800&auto=format&fit=crop" },
+    { title: "Smart UX",      sub: "Intuitive", desc: "Architecting seamless user journeys that feel natural.", img: "https://images.unsplash.com/photo-1551650975-87deedd944c3?q=80&w=800&fit=crop" },
+    { title: "Motion Design", sub: "Dynamics",  desc: "Purposeful animations that guide users.",               img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?q=80&w=800&fit=crop" },
+    { title: "Grid Systems",  sub: "Structure", desc: "Mathematical layouts ensuring perfect scalability.",     img: "https://images.unsplash.com/photo-1586717791821-3f44a563fa4c?q=80&w=800&fit=crop" },
   ];
 
   // Loader
@@ -84,27 +148,34 @@ export default function ModernEffectsPage() {
     return () => clearInterval(id);
   }, []);
 
-  // Road parallax
+  // Road parallax — RAF-throttled, only transforms the element (no layout)
   useEffect(() => {
     if (isLoading) return;
-    let rafId = 0;
     const onScroll = () => {
-      cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(() => {
+      cancelAnimationFrame(scrollRafRef.current);
+      scrollRafRef.current = requestAnimationFrame(() => {
         if (roadRef.current) {
-          roadRef.current.style.height = `${Math.max(0, window.innerHeight - window.scrollY * 1.5)}px`;
+          // Use transform instead of height to stay on the compositor thread
+          const shrink = Math.min(window.scrollY * 1.5, window.innerHeight);
+          roadRef.current.style.transform = `scaleY(${Math.max(0, 1 - shrink / window.innerHeight)})`;
         }
       });
     };
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => { window.removeEventListener("scroll", onScroll); cancelAnimationFrame(rafId); };
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(scrollRafRef.current);
+    };
   }, [isLoading]);
 
   const changeSlide = useCallback((dir: number) => {
+    if (isAnimating.current) return;
+    isAnimating.current = true;
     setActiveIndex(p => (p + dir + sliderData.length) % sliderData.length);
+    // Unlock after transition completes (700 ms)
+    setTimeout(() => { isAnimating.current = false; }, 700);
   }, [sliderData.length]);
 
-  const touchStartX = useRef(0);
   const onTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
   const onTouchEnd   = (e: React.TouchEvent) => {
     const dx = touchStartX.current - e.changedTouches[0].clientX;
@@ -112,29 +183,16 @@ export default function ModernEffectsPage() {
   };
 
   return (
-    <div ref={containerRef} className="relative bg-[#050505] text-white overflow-x-hidden" style={{ fontFamily: "'Archivo',sans-serif" }}>
+    <div className="relative bg-[#050505] text-white overflow-x-hidden" style={{ fontFamily: "'Archivo',sans-serif" }}>
       <style dangerouslySetInnerHTML={{ __html: `
         @import url("https://fonts.googleapis.com/css2?family=Archivo:wght@400;700;800;900&display=swap");
 
-        /* ─ Seamless loop: animate exactly -50% of the doubled track ─ */
-        @keyframes mq-fwd {
-          from { transform: translateX(0); }
-          to   { transform: translateX(-50%); }
-        }
-        @keyframes mq-rev {
-          from { transform: translateX(-50%); }
-          to   { transform: translateX(0); }
-        }
-
-        /* GPU-composited: only transform touches the layer ─ no repaints */
-        .mq-fwd, .mq-rev {
-          will-change: transform;
-          backface-visibility: hidden;
-          -webkit-backface-visibility: hidden;
-        }
+        /* GPU-only marquee loop */
+        @keyframes mq-fwd { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+        @keyframes mq-rev { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+        .mq-fwd, .mq-rev { will-change: transform; }
         .mq-fwd { animation: mq-fwd linear infinite; }
         .mq-rev { animation: mq-rev linear infinite; }
-
         @media (hover: hover) {
           .mq-fwd:hover, .mq-rev:hover { animation-play-state: paused; }
         }
@@ -142,34 +200,53 @@ export default function ModernEffectsPage() {
           .mq-fwd, .mq-rev { animation: none !important; }
         }
 
+        /* Slider cards: GPU-composited transition, NO layout recalc */
+        .slider-card {
+          transition: transform 0.7s cubic-bezier(0.22,1,0.36,1), opacity 0.4s ease;
+          will-change: transform;
+          /* Promote to own layer up-front so no stutter on first interaction */
+          transform: translateZ(0);
+        }
+
+        /* Road element: transform-origin bottom so it shrinks downward */
+        .road-el {
+          transform-origin: bottom center;
+          will-change: transform;
+        }
+
         .clip-path-road { clip-path: polygon(48% 0%,52% 0%,100% 100%,0% 100%); }
-        .slide-3d { transition: transform 0.7s cubic-bezier(0.22,1,0.36,1), opacity 0.4s ease; }
       `}} />
 
-      {/* LOADER */}
+      {/* ── LOADER ─────────────────────────────────────────────────────────── */}
       {isLoading && (
         <div className="fixed inset-0 bg-white z-[10000] flex flex-col justify-end p-6 md:p-10 overflow-hidden">
           <div className="absolute inset-y-0 left-0 bg-black"
             style={{ width: `${progress}%`, transition: "width 60ms linear" }} />
-          <span className="relative z-10 font-black leading-none tracking-tighter select-none"
-            style={{ fontSize: "clamp(72px,22vw,220px)", color: progress < 50 ? "#000" : "#fff", transition: "color 0.3s" }}>
+          <span
+            className="relative z-10 font-black leading-none tracking-tighter select-none"
+            style={{ fontSize: "clamp(72px,22vw,220px)", color: progress < 50 ? "#000" : "#fff", transition: "color 0.3s" }}
+          >
             {Math.round(progress)}%
           </span>
         </div>
       )}
 
-      {/* HERO */}
+      {/* ── HERO ───────────────────────────────────────────────────────────── */}
       <section className="h-screen flex flex-col justify-end items-center relative overflow-hidden bg-black">
         <div className="flex flex-col items-center justify-end w-full h-full">
           <div className="bg-white rounded-t-full mix-blend-difference"
             style={{ width: "clamp(180px,75%,580px)", height: "clamp(90px,18vw,280px)" }} />
           <div className="w-full h-px bg-white" />
         </div>
-        <div ref={roadRef} className="clip-path-road bg-white mix-blend-difference absolute bottom-0 w-full"
-          style={{ height: "100vh", willChange: "height" }} />
+        {/* Road uses transform instead of height mutation → compositor only */}
+        <div
+          ref={roadRef}
+          className="clip-path-road bg-white mix-blend-difference absolute bottom-0 w-full road-el"
+          style={{ height: "100vh" }}
+        />
       </section>
 
-      {/* PART 1 */}
+      {/* ── PART 1 ─────────────────────────────────────────────────────────── */}
       <section className="bg-white py-16 md:py-20 px-6 md:px-10 min-h-screen relative overflow-hidden">
         <h2 className="fixed top-10 left-0 font-black mix-blend-difference text-white pointer-events-none leading-none whitespace-nowrap select-none"
           style={{ fontSize: "clamp(56px,13vw,180px)", opacity: 0.07, zIndex: 0 }}>TEZCO FLOW</h2>
@@ -181,68 +258,73 @@ export default function ModernEffectsPage() {
         </div>
       </section>
 
-      {/* 3D SLIDER */}
+      {/* ── 3D SLIDER ──────────────────────────────────────────────────────── */}
+      {/*
+        Key fix: we use `touch-action: pan-y` so the browser keeps
+        vertical scroll native and ONLY prevents default on horizontal swipe.
+        The cards themselves never block scroll. We also guard against rapid
+        clicks with isAnimating ref so React doesn't queue state updates
+        faster than the CSS transition can handle.
+      */}
       <div
         className="bg-black min-h-screen flex items-center justify-center overflow-hidden relative py-16 md:py-24"
         style={{ touchAction: "pan-y" }}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
       >
+        {/* Arrow buttons — pointer-events: none on container so they never block scroll */}
         <div className="absolute inset-y-0 left-0 right-0 flex items-center justify-between px-3 md:px-8 z-50 pointer-events-none">
           {([[-1, ChevronLeft], [1, ChevronRight]] as [number, React.ElementType][]).map(([dir, Icon]) => (
-            <button key={dir} onClick={() => changeSlide(dir)}
-              className="pointer-events-auto p-3 bg-white/5 backdrop-blur-md rounded-full border border-white/10 hover:bg-white/20 active:scale-95 transition-all">
+            <button
+              key={dir}
+              onClick={() => changeSlide(dir as number)}
+              className="pointer-events-auto p-3 bg-white/5 backdrop-blur-md rounded-full border border-white/10 hover:bg-white/20 active:scale-95 transition-all"
+              style={{ touchAction: "manipulation" }}
+            >
               <Icon size={22} className="text-white" />
             </button>
           ))}
         </div>
 
+        {/* Cards container: overflow-visible so rotated cards show outside bounds */}
         <div className="flex items-center justify-center gap-4 md:gap-10 w-full overflow-visible px-4">
           {sliderData.map((card, i) => {
             const off    = i - activeIndex;
             const active = off === 0;
             return (
-              <div key={i}
+              <SliderCard
+                key={i}
+                card={card}
+                offset={off}
+                active={active}
                 onClick={() => !active && changeSlide(off > 0 ? 1 : -1)}
-                className={`slide-3d relative shrink-0 cursor-pointer ${Math.abs(off) > 1 ? "hidden md:block" : "block"}`}
-                style={{
-                  width: "clamp(190px,50vw,300px)",
-                  height: "clamp(280px,65vw,460px)",
-                  transform: `perspective(1100px) translateX(${off * 55}px) rotateY(${off * -32}deg) scale(${active ? 1.08 : 0.76})`,
-                  opacity: Math.abs(off) > 1 ? 0 : 1,
-                  zIndex: active ? 30 : 20 - Math.abs(off),
-                  willChange: "transform",
-                }}
-              >
-                <div className={`w-full h-full rounded-3xl overflow-hidden border ${active ? "border-white/40" : "border-white/10"} shadow-2xl`}>
-                  <img src={card.img} alt={card.title} loading="eager"
-                    className={`w-full h-full object-cover transition-all duration-700 ${active ? "scale-110 brightness-75" : "scale-100 brightness-50"}`} />
-                </div>
-                {active && (
-                  <div className="absolute z-40 p-4 md:p-6 backdrop-blur-xl bg-black/65 rounded-2xl border border-white/10 shadow-2xl"
-                    style={{ bottom: "-16px", left: "clamp(-6px,-2vw,-32px)", minWidth: "clamp(150px,65%,300px)" }}>
-                    <p className="text-cyan-400 font-bold uppercase tracking-[0.2em] text-[9px] mb-1">{card.sub}</p>
-                    <h4 className="font-black text-white uppercase leading-none mb-2"
-                      style={{ fontSize: "clamp(16px,4.5vw,32px)" }}>{card.title}</h4>
-                    <p className="text-white/65 leading-relaxed font-light"
-                      style={{ fontSize: "clamp(10px,1.8vw,12px)" }}>{card.desc}</p>
-                  </div>
-                )}
-              </div>
+              />
             );
           })}
         </div>
 
+        {/* Mobile dot indicators */}
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 md:hidden">
           {sliderData.map((_, i) => (
-            <button key={i} onClick={() => setActiveIndex(i)}
-              className="h-2 rounded-full transition-all"
-              style={{ width: i === activeIndex ? 20 : 8, background: i === activeIndex ? "#22d3ee" : "rgba(255,255,255,0.3)" }} />
+            <button
+              key={i}
+              onClick={() => setActiveIndex(i)}
+              style={{
+                height: 8,
+                width: i === activeIndex ? 20 : 8,
+                borderRadius: 4,
+                background: i === activeIndex ? "#22d3ee" : "rgba(255,255,255,0.3)",
+                transition: "width 0.3s ease, background 0.3s ease",
+                border: "none",
+                padding: 0,
+                touchAction: "manipulation",
+              }}
+            />
           ))}
         </div>
       </div>
 
-      {/* MARQUEE SECTION */}
+      {/* ── MARQUEE SECTION ────────────────────────────────────────────────── */}
       <section className="bg-[#050505] py-20 md:py-32 overflow-hidden">
         <div className="px-6 md:px-16 mb-16 md:mb-24">
           <p className="text-gray-500 uppercase tracking-[0.3em] text-[10px] font-bold mb-4">What we do</p>
@@ -256,9 +338,7 @@ export default function ModernEffectsPage() {
             From architecture to deployment — we engineer digital experiences that are fast, scalable, and built to last.
           </p>
         </div>
-
         <div className="w-full h-px bg-white/5 mb-8" />
-
         <MarqueeRow reversed={false} duration="32s" />
         <div className="h-3" />
         <MarqueeRow reversed={true}  duration="26s" />
