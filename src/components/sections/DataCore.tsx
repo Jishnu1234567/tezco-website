@@ -3,8 +3,7 @@
 import React, { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { gsap } from "gsap";
-import { Send, Github, Twitter, Linkedin, Mail, MapPin } from "lucide-react";
-import emailjs from "@emailjs/browser"; // You'll need to install this: npm install @emailjs/browser
+import { Send, Mail, MapPin } from "lucide-react";
 
 export default function ContactFooter() {
   const footerRef = useRef<HTMLDivElement>(null);
@@ -12,28 +11,39 @@ export default function ContactFooter() {
   const [isSending, setIsSending] = useState(false);
   const [status, setStatus] = useState("");
 
-  const sendEmail = (e: React.FormEvent) => {
+  const sendEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSending(true);
+    setStatus("");
 
-    // Replace these with your EmailJS credentials
-    // Get them at https://dashboard.emailjs.com/
-    const SERVICE_ID = "service_vkeiurj";
-    const TEMPLATE_ID = "template_8xz6hqj";
-    const PUBLIC_KEY = "a6xluLLsf0Mq6ANSd";
+    // Get data from the form using the 'name' attributes
+    const formData = new FormData(formRef.current!);
+    const payload = {
+      user_name: formData.get("user_name"),
+      user_email: formData.get("user_email"),
+      message: formData.get("message"),
+    };
 
-    emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, formRef.current!, PUBLIC_KEY)
-      .then(() => {
+    try {
+      // Calling the local API route we will create in Step 2
+      const response = await fetch("/api/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
         setStatus("Message sent successfully!");
         formRef.current?.reset();
-      }, (error) => {
-        setStatus("Failed to send. Please try again.");
-        console.error(error.text);
-      })
-      .finally(() => {
-        setIsSending(false);
-        setTimeout(() => setStatus(""), 5000);
-      });
+      } else {
+        throw new Error("Failed to send");
+      }
+    } catch (error) {
+      setStatus("Failed to send. Please try again.");
+    } finally {
+      setIsSending(false);
+      setTimeout(() => setStatus(""), 5000);
+    }
   };
 
   const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -78,7 +88,7 @@ export default function ContactFooter() {
                   <p className="text-lg font-medium">hello@tezco.studio</p>
                 </div>
               </div>
-               <div className="flex items-center gap-4 text-gray-300 group">
+              <div className="flex items-center gap-4 text-gray-300 group">
                 <div className="p-3 bg-white/5 border border-white/10 rounded-xl group-hover:border-red-500/50 transition-colors">
                   <MapPin size={20} className="text-red-500" />
                 </div>
