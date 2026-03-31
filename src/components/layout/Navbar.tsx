@@ -14,19 +14,46 @@ const NAV_ITEMS = [
 
 // --- TEZCO LOGO COMPONENT ---
 const TezcoLogo = () => (
-  <img
-    src="/TEZCO (2).png"
-    alt="TEZCO - Technical Experts"
-    style={{
-      height: "125px",        // ✅ reduced from 150px
-      width: "125px",
-      display: "block",
-      mixBlendMode: "screen", // ✅ kills any remaining dark background
-     
-      transition: "filter 0.3s ease",
-    }}
-   
-  />
+  <svg
+    width="180"
+    height="50"
+    viewBox="0 0 450 150"
+    className="drop-shadow-[0_0_10px_rgba(56,189,248,0.4)] transition-all duration-300 hover:drop-shadow-[0_0_15px_rgba(56,189,248,0.7)]"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <defs>
+      <linearGradient id="logo-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stopColor="#7DD3FC" />
+        <stop offset="100%" stopColor="#1D4ED8" />
+      </linearGradient>
+    </defs>
+
+    {/* Brand Text - Adjusted X to ensure no letters are cut off */}
+    <text 
+      x="10" 
+      y="95" 
+      fontFamily="Inter, sans-serif" 
+      fontWeight="900" 
+      fontSize="110" 
+      fill="url(#logo-grad)" 
+      letterSpacing="-4"
+    >
+      TEZCO
+    </text>
+    
+    <text 
+      x="12" 
+      y="135" 
+      fontFamily="Inter, sans-serif" 
+      fontWeight="600" 
+      fontSize="26" 
+      fill="url(#logo-grad)" 
+      style={{ textTransform: 'uppercase', letterSpacing: '5.5px', opacity: 0.9 }}
+    >
+      TECHNICAL EXPERTS
+    </text>
+  </svg>
 );
 
 export default function Navbar() {
@@ -45,41 +72,45 @@ export default function Navbar() {
 
   return (
     <nav className={`fixed top-0 w-full z-[999] transition-all duration-500 ${
-      scrolled ? "py-2 bg-black/80 backdrop-blur-md" : "py-6 bg-transparent"
+      scrolled ? "py-3 bg-black/80 backdrop-blur-lg border-b border-white/5" : "py-8 bg-transparent"
     }`}>
       <style dangerouslySetInnerHTML={{ __html: `
         .custom-nav {
-          width: fit-content;
-          padding: 6px;
-          border-radius: 12px;
-          background: rgb(0, 0, 0);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgb(0, 0, 0);
+          display: flex;
+          align-items: center;
+          padding: 4px;
+          border-radius: 100px;
+          background: rgba(255, 255, 255, 0.03);
+          backdrop-filter: blur(12px);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          box-shadow: 0 4px 24px -1px rgba(0, 0, 0, 0.2);
         }
         .nav-link {
-          display: block;
-          padding: 0.6rem 1.2rem;
-          color: #9ca3af;
-          font-size: 0.75rem;
+          padding: 0.6rem 1.4rem;
+          color: #a1a1aa;
+          font-size: 0.7rem;
           font-weight: 700;
           text-transform: uppercase;
-          letter-spacing: 0.1em;
-          transition: color 300ms;
+          letter-spacing: 0.15em;
+          transition: all 300ms ease;
+          border-radius: 100px;
         }
-        .nav-link:hover { color: white; }
+        .nav-link:hover { 
+          color: white; 
+          background: rgba(255, 255, 255, 0.05);
+        }
         @media (max-width: 768px) { .custom-nav { display: none; } }
       `}} />
 
       <div className="container mx-auto px-6 lg:px-20 flex justify-between items-center relative z-[1001]">
-        {/* Logo Section - Now using the native SVG component */}
-        <a href="#home" className="flex items-center transform transition-transform hover:scale-105 active:scale-95">
+        <a href="#home" className="flex items-center transition-transform hover:scale-[1.02] active:scale-95">
           <TezcoLogo />
         </a>
 
         {/* Desktop Nav */}
         <div className="hidden md:block">
           <div className="custom-nav">
-            <ul className="flex">
+            <ul className="flex gap-1">
               {NAV_ITEMS.map((item) => (
                 <li key={item.label}>
                   <a href={item.href} className="nav-link">{item.label}</a>
@@ -92,7 +123,7 @@ export default function Navbar() {
         {/* Mobile Toggle Button */}
         <button 
           onClick={() => setIsOpen(!isOpen)} 
-          className="md:hidden text-white p-2 relative z-[1002]"
+          className="md:hidden text-white p-2 relative z-[1002] transition-colors hover:text-cyan-400"
         >
           {isOpen ? <X size={32} /> : <Menu size={32} />}
         </button>
@@ -107,7 +138,7 @@ export default function Navbar() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsOpen(false)}
-              className="fixed inset-0 bg-black/90 backdrop-blur-xl z-[1000] md:hidden"
+              className="fixed inset-0 bg-black/95 backdrop-blur-2xl z-[1000] md:hidden"
             />
             
             <motion.div
@@ -115,23 +146,26 @@ export default function Navbar() {
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 h-screen w-[85%] bg-[#050505] border-l border-white/10 z-[1001] flex flex-col justify-center p-12 gap-8 md:hidden"
+              className="fixed top-0 right-0 h-screen w-[85%] bg-[#030303] border-l border-white/10 z-[1001] flex flex-col justify-center p-12 gap-10 md:hidden"
             >
-              {NAV_ITEMS.map((item, i) => (
-                <motion.a
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.1 }}
-                  key={item.label}
-                  href={item.href}
-                  onClick={() => setIsOpen(false)}
-                  className="text-4xl font-black text-white hover:text-cyan-400 transition-colors tracking-tighter uppercase"
-                >
-                  {item.label}
-                </motion.a>
-              ))}
-              <div className="mt-10 pt-10 border-t border-white/5">
-                <p className="text-cyan-500/50 text-xs tracking-widest uppercase font-bold">The Technical Experts</p>
+              <div className="space-y-6">
+                {NAV_ITEMS.map((item, i) => (
+                  <motion.a
+                    initial={{ opacity: 0, x: 30 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    key={item.label}
+                    href={item.href}
+                    onClick={() => setIsOpen(false)}
+                    className="block text-5xl font-black text-white hover:text-cyan-500 transition-colors tracking-tighter uppercase"
+                  >
+                    {item.label}
+                  </motion.a>
+                ))}
+              </div>
+              
+              <div className="mt-12 pt-12 border-t border-white/5">
+                <p className="text-cyan-500/60 text-xs tracking-[0.3em] uppercase font-bold">The Technical Experts</p>
               </div>
             </motion.div>
           </>
